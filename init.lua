@@ -992,3 +992,123 @@ require('lazy').setup({
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- Text aliases.
+
+local replacement_table = {
+  -- Make the Self thingy look cool.
+  {
+    match = "Self",
+    replacement = {
+      { "󰬀󰫲󰫹󰫳", "" }
+    },
+  },
+  -- Alert comment.
+  {
+    match = "// !!",
+    replacement = {
+      { "", "AlertComment" },
+      { " ! ", "AlertCommentCenter" },
+      { "", "AlertComment" }
+    }
+  },
+  -- TODO comment.
+  {
+    match = "// TODO:",
+    replacement = {
+      { "█", "TodoComment" },
+      { "TODO", "TodoCommentCenter" },
+      { "█", "TodoComment" }
+    }
+  },
+  -- Querycomment.
+  {
+    match = "// ??",
+    replacement = {
+      { "", "QueryComment" },
+      { " ? ", "QueryCommentCenter" },
+      { "", "QueryComment" }
+    }
+  },
+  {
+    match = "///",
+    replacement = {
+      { "", "DocComment" },
+      { "D", "DocCommentCenter" },
+      { "", "DocComment" }
+    }
+  }
+}
+
+-- Styles definitions.
+vim.api.nvim_set_hl(0, "AlertComment", {
+  fg = "#ff0000",
+})
+
+vim.api.nvim_set_hl(0, "AlertCommentCenter", {
+  bg = "#ff0000",
+  fg = "#000000"
+})
+
+vim.api.nvim_set_hl(0, "TodoComment", {
+  fg = "#ffff00",
+})
+
+vim.api.nvim_set_hl(0, "TodoCommentCenter", {
+  bg = "#ffff00",
+  fg = "#000000"
+})
+
+vim.api.nvim_set_hl(0, "QueryComment", {
+  fg = "#0088ff",
+})
+
+vim.api.nvim_set_hl(0, "QueryCommentCenter", {
+  bg = "#0088ff",
+  fg = "#000000"
+})
+
+vim.api.nvim_set_hl(0, "DocComment", {
+  fg = "#555555",
+})
+
+vim.api.nvim_set_hl(0, "DocCommentCenter", {
+  bg = "#555555",
+  fg = "#000000"
+})
+
+
+local ns = vim.api.nvim_create_namespace("self_replace")
+
+vim.api.nvim_set_decoration_provider(ns, {
+  on_win = function(_, win, buf)
+    vim.api.nvim_buf_clear_namespace(buf, ns, 0, -1)
+
+    local top = vim.fn.line("w0", win) - 1
+    local bot = vim.fn.line("w$", win) - 1
+
+    local lines = vim.api.nvim_buf_get_lines(buf, top, bot + 1, false)
+
+    for i, line in ipairs(lines) do
+      local lnum = top + i
+
+      for _, rt in ipairs(replacement_table) do
+        local start = 1
+
+        while true do
+          local s, e = line:find(rt.match, start, true)
+          if not s then
+            break
+          end
+
+          vim.api.nvim_buf_set_extmark(buf, ns, lnum - 1, s - 1, {
+            virt_text = rt.replacement,
+            virt_text_pos = "overlay",
+          })
+
+          start = e + 1
+        end
+      end
+    end
+  end,
+})
