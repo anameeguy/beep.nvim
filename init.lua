@@ -996,13 +996,6 @@ require('lazy').setup({
 -- Text aliases.
 
 local replacement_table = {
-  -- Make the Self thingy look cool.
-  {
-    match = "Self",
-    replacement = {
-      { "󰬀󰫲󰫹󰫳", "" }
-    },
-  },
   -- Alert comment.
   {
     match = "// !!",
@@ -1023,19 +1016,11 @@ local replacement_table = {
   },
   -- Querycomment.
   {
-    match = "// ??",
+    match = "// %?%?",
     replacement = {
       { "", "QueryComment" },
       { " ? ", "QueryCommentCenter" },
       { "", "QueryComment" }
-    }
-  },
-  {
-    match = "///",
-    replacement = {
-      { "", "DocComment" },
-      { "D", "DocCommentCenter" },
-      { "", "DocComment" }
     }
   }
 }
@@ -1096,7 +1081,7 @@ vim.api.nvim_set_decoration_provider(ns, {
         local start = 1
 
         while true do
-          local s, e = line:find(rt.match, start, true)
+          local s, e = line:find(rt.match, start)
           if not s then
             break
           end
